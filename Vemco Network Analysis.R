@@ -26,54 +26,99 @@ library('igraph')
 load('vue_data.Rda')
 load('receiver_data.Rda')
 
-# ### Constructing dataframes 
-# ## Importing receiver data
-# receiver_data = load_receiver(filename = 'DEPLOYMENT_RECOVERY_LOG.csv', 
-#                               filepath = '/Users/stephenscherrer/Dropbox/Lab Folder/Oahu Receiver Data Files/')
-# 
-# ## Import tagging log
-# tagging_data = load_tagging_data(filename = 'Bottomfish_Tag_Master.csv',
-#                                  filepath = '/Users/stephenscherrer/Dropbox/Lab Folder/Oahu Receiver Data Files/')
-# 
-# ## Importing VUE Data
-# vue_data = load_vemco(filename = 'VUE_Export_2015-Jan-20.csv',
-#                       filepath = '/Users/stephenscherrer/Dropbox/Lab Folder/Oahu Receiver Data Files/')
-# 
-# #### Cleaning data -------------------------------------------------
-# 
-# ## Fixing missing Lat and Lons
-# vue_data = clean_vue_lat_lon(vue_data, receiver_data)
-# 
-# ## Removing detections from botcam crew
-# vue_data = remove_location(vue_data, 'With BotCam Crew')
-# 
-# ## Removing tags in bottomfish tagging database that are not, 
-#   ## or likely not actual tagged bottomfish (at cross 
-#   ## maybe monchong?)
-#  vue_data = clean_vue(vue_data, c(57451, 37954), exclude = TRUE)
-# 
-# # Pulling all tag ids associated with opakapaka species
-# tag_ids = na.exclude(tagging_data$vem_tag_id[
-#   tagging_data$species == 'Opakapaka']) 
-# 
-# # Converting tag ids from factor to numerics
-# tag_ids = unique(as.numeric(levels(tag_ids))[tag_ids])
-# 
-# ## Removing Vue data for tags not associated with tag_ids of interest
-# vue_data = clean_vue(vue_data, tag_ids, exclude = FALSE)
-# 
-# ## Removing vue data from unwanted tags
-# # unwanted_tags = c()
-# # vue_data = clean_vue(vue_data, unwanted_tags, exclude = TRUE)
-#   
-# ## Removing botcam detections from botcam drops because receivers 
-#   ## were only deployed for 45 min.
-# vue_data = remove_location(vue_data, 'With BotCam Crew')
-# 
-# ## Saving Data Frames
-#  save(vue_data, file = 'vue_data.Rda')
-#  save(receiver_data, file = 'receiver_data.Rda')
+### Constructing dataframes 
+## Importing receiver data
+receiver_data = load_receiver(filename = 'DEPLOYMENT_RECOVERY_LOG.csv', 
+                              filepath = '/Users/stephenscherrer/Dropbox/Lab Folder/Oahu Receiver Data Files/')
+
+## Import tagging log
+tagging_data = load_tagging_data(filename = 'Bottomfish_Tag_Master.csv',
+                                 filepath = '/Users/stephenscherrer/Dropbox/Lab Folder/Oahu Receiver Data Files/')
+
+## Importing VUE Data
+vue_data = load_vemco(filename = 'VUE_Export_2015-Jan-20.csv',
+                      filepath = '/Users/stephenscherrer/Dropbox/Lab Folder/Oahu Receiver Data Files/')
+
+#### Cleaning data -------------------------------------------------
+
+## Fixing missing Lat and Lons
+vue_data = clean_vue_lat_lon(vue_data, receiver_data)
+
+## Removing detections from botcam crew
+vue_data = remove_location(vue_data, 'With BotCam Crew')
+
+## Removing tags in bottomfish tagging database that are not, 
+  ## or likely not actual tagged bottomfish (at cross 
+  ## maybe monchong?)
+ vue_data = clean_vue(vue_data, c(57451, 37954), exclude = TRUE)
+
+# Pulling all tag ids associated with opakapaka species
+#tag_ids = na.exclude(tagging_data$vem_tag_id[
+  #tagging_data$species == 'Opakapaka']) 
+
+## Converting tag ids from factor to numerics
+#tag_ids = unique(as.numeric(levels(tag_ids))[tag_ids])
+
+## Pulling all tag ids associated with white shark species
+# Tag IDs for White Sharks
+tag_ids = c(633, 68295, 8893, 8832, 1425, 29700, 2139, 8892, 9095, 
+            3430, 3580, 3407, 18616, 3265, 52933, 68291, 630, 62142, 
+            88758, 83056, 83054, 88767, 88765, 46863, 46862, 46861, 
+            58432, 100521, 29711, 3339, 3281, 3402, 18596, 29710, 
+            41761, 41753, 41760, 41739, 41748, 41773, 52928, 49019, 
+            52930, 52934, 62015, 61910, 62016, 61907, 61902, 62012, 
+            62019, 62011, 62010, 61899, 61904, 62020, 61898, 62014, 
+            62013, 52873, 62021, 60982, 60983, 62017, 68281, 68308, 
+            642, 68321, 68286, 68320, 68319, 68290, 624, 637, 622, 
+            640, 635, 623, 62121, 46109, 618, 52446, 52456, 52458, 
+            111194, 87568, 68317, 10565, 61911, 61914, 62018, 61909, 
+            6841, 627, 6847, 6840, 645, 78173, 655, 654, 6843, 52426, 
+            52422, 52927, 61900, 111190, 58446, 617, 52428, 46114, 
+            52455, 659, 46111, 46118, 58460, 58453, 58445, 78159, 646, 
+            62145, 52436, 87568, 653, 616, 52452, 46116, 52454, 52425, 
+            68272, 12827, 46108, 52435, 46105, 52434, 52433, 52442, 
+            87597, 52419, 62127, 62146, 46110, 62140, 46115, 46106, 
+            46097, 59108, 58438, 58431, 58448, 58456, 58458, 6858, 
+            62122, 62125, 62126, 62131, 12828, 68251, 68315, 46107, 
+            52449, 58447, 52039, 61906, 59112, 52929, 46117, 46094, 
+            52440, 631, 78172, 62137, 68253, 629, 68282, 68314, 68305, 
+            61908, 68252, 68306, 68309, 641, 648, 651, 657, 6844, 62138, 
+            6857, 62133, 62124, 46104, 46100, 61905, 52450, 78168, 6845, 
+            58455, 52429, 78145, 6851, 52439, 46103, 52432, 46099, 58452, 
+            58434, 46102, 2994, 111182, 58437, 59114, 108314, 59106, 33560, 
+            33543, 102061, 656, 625, 68307, 59105, 62147, 660, 52041, 87562, 
+            58435, 6852, 58459, 111193, 58457, 58442, 33549, 59110, 33539, 
+            33535, 33533, 33531, 68310, 103300, 33530, 33540, 33541, 33538, 
+            59109, 33532, 33537, 33542, 33548, 68307, 59113, 87602, 658, 52457, 
+            46095, 33546, 58433, 6859, 78153, 68249, 62149, 58441, 78176, 52421, 
+            46098, 638, 68316, 6848, 59107, 6850, 58443, 78177, 111195, 
+            628, 78175, 52420, 639, 62148, 62022, 46101, 52438, 52423, 
+            58444, 62134, 78171, 68312, 6855, 58440, 62150, 52431, 636, 
+            68287, 78152, 643, 62130, 87569, 6853, 78141, 62132, 68311, 
+            62144, 52424, 62139, 6846, 78169, 78136, 103307, 52437, 46112, 
+            58449, 49018, 6856, 78167, 650, 68250, 52427, 58439, 632, 
+            58451, 52451, 49075, 87563, 85532, 59111, 33545, 33544, 33547, 
+            62123, 58450, 87570, 6854, 46096, 52430, 52447, 62128, 62136, 
+            62141, 46113, 62143, 62129, 52444, 52441, 6849, 58454, 58436, 
+            6842 )
+
+## Removing Vue data for tags not associated with tag_ids of interest
+vue_data = clean_vue(vue_data, tag_ids, exclude = FALSE)
+
+## Removing vue data from unwanted tags
+# unwanted_tags = c()
+# vue_data = clean_vue(vue_data, unwanted_tags, exclude = TRUE)
+  
+## Removing botcam detections from botcam drops because receivers 
+  ## were only deployed for 45 min.
+vue_data = remove_location(vue_data, 'With BotCam Crew')
+
+## Saving Data Frames
+  save(vue_data, file = 'vue_data.Rda')
+  save(receiver_data, file = 'receiver_data.Rda')
  
+## Pulling only those tag IDS that appear in the data
+tag_ids = unique(vue_data$tag_id)
 
 #### Creating Networks -------------------------------------------
 
@@ -105,6 +150,9 @@ get_graph = function(vue_df,
   # Pulling out detections for a specific tag
   vue_df = clean_vue(vue_data, tag_id, exclude = FALSE)
   
+  # Order vue_df by tag id
+    vue_df = vue_df[order(vue_df$tag_id, vue_df$datetime), ]
+  
   # To Do: pull out receivers present during a specific time period
   
   # Build adjacency matrix, with receivers as nodes and fish 
@@ -115,7 +163,8 @@ get_graph = function(vue_df,
                       nlevels(vue_df$station))
   # If station changes, increase adjacency matrix value by one
   for (i in 2:length(vue_df$station)){
-    if (vue_df$station[i] != vue_df$station[i-1]){
+    if (vue_df$station[i] != vue_df$station[i-1] &
+          vue_df$tag_id[i] == vue_df$tag_id[i-1]){
       adj_matrix[as.numeric(vue_df$station[i-1]), 
                  as.numeric(vue_df$station[i])] = 
         adj_matrix[as.numeric(vue_df$station[i-1]), 
