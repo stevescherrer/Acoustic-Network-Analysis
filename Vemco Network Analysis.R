@@ -21,54 +21,65 @@ source('/Users/stephenscherrer/Documents/Programming/R/utility_functions.R')
 library('igraph')
 
 #### Loading and Cleaning Datafiles --------------------------------
-## Importing receiver data
-receiver_data = load_receiver(filename = 'DEPLOYMENT_RECOVERY_LOG.csv', 
-                              filepath = '/Users/stephenscherrer/Dropbox/Lab Folder/Oahu Receiver Data Files/')
 
-## Import tagging log
-tagging_data = load_tagging_data(filename = 'Bottomfish_Tag_Master.csv',
-                                 filepath = '/Users/stephenscherrer/Dropbox/Lab Folder/Oahu Receiver Data Files/')
+### Loading data from saved dataframes
+load('vue_data.Rda')
+load('receiver_data.Rda')
 
-## Importing VUE Data
-vue_data = load_vemco(filename = 'VUE_Export_2015-Jan-20.csv',
-                      filepath = '/Users/stephenscherrer/Dropbox/Lab Folder/Oahu Receiver Data Files/')
-
-#### Cleaning data -------------------------------------------------
-
-## Fixing missing Lat and Lons
-vue_data = clean_vue_lat_lon(vue_data, receiver_data)
-
-## Removing detections from botcam crew
-vue_data = remove_location(vue_data, 'With BotCam Crew')
-
-## Removing tags in bottomfish tagging database that are not, 
-  ## or likely not actual tagged bottomfish (maybe monchong?)
-
-
-# Pulling all tag ids associated with opakapaka species
-tag_ids = na.exclude(tagging_data$vem_tag_id[
-  tagging_data$species == 'Opakapaka']) 
-
-# Converting tag ids from factor to numerics
-tag_ids = unique(as.numeric(levels(tag_ids))[tag_ids])
-
-## Removing Vue data for tags not associated with tag_ids of interest
-vue_data = clean_vue(vue_data, tag_ids, exclude = FALSE)
-
-## Removing vue data from unwanted tags
-# unwanted_tags = c()
-# vue_data = clean_vue(vue_data, unwanted_tags, exclude = TRUE)
-  
-## Removing botcam detections from botcam drops because receivers 
-  ## were only deployed for 45 min.
-vue_data = remove_location(vue_data, 'With BotCam Crew')
-
+# ### Constructing dataframes 
+# ## Importing receiver data
+# receiver_data = load_receiver(filename = 'DEPLOYMENT_RECOVERY_LOG.csv', 
+#                               filepath = '/Users/stephenscherrer/Dropbox/Lab Folder/Oahu Receiver Data Files/')
+# 
+# ## Import tagging log
+# tagging_data = load_tagging_data(filename = 'Bottomfish_Tag_Master.csv',
+#                                  filepath = '/Users/stephenscherrer/Dropbox/Lab Folder/Oahu Receiver Data Files/')
+# 
+# ## Importing VUE Data
+# vue_data = load_vemco(filename = 'VUE_Export_2015-Jan-20.csv',
+#                       filepath = '/Users/stephenscherrer/Dropbox/Lab Folder/Oahu Receiver Data Files/')
+# 
+# #### Cleaning data -------------------------------------------------
+# 
+# ## Fixing missing Lat and Lons
+# vue_data = clean_vue_lat_lon(vue_data, receiver_data)
+# 
+# ## Removing detections from botcam crew
+# vue_data = remove_location(vue_data, 'With BotCam Crew')
+# 
+# ## Removing tags in bottomfish tagging database that are not, 
+#   ## or likely not actual tagged bottomfish (at cross 
+#   ## maybe monchong?)
+#  vue_data = clean_vue(vue_data, c(57451, 37954), exclude = TRUE)
+# 
+# # Pulling all tag ids associated with opakapaka species
+# tag_ids = na.exclude(tagging_data$vem_tag_id[
+#   tagging_data$species == 'Opakapaka']) 
+# 
+# # Converting tag ids from factor to numerics
+# tag_ids = unique(as.numeric(levels(tag_ids))[tag_ids])
+# 
+# ## Removing Vue data for tags not associated with tag_ids of interest
+# vue_data = clean_vue(vue_data, tag_ids, exclude = FALSE)
+# 
+# ## Removing vue data from unwanted tags
+# # unwanted_tags = c()
+# # vue_data = clean_vue(vue_data, unwanted_tags, exclude = TRUE)
+#   
+# ## Removing botcam detections from botcam drops because receivers 
+#   ## were only deployed for 45 min.
+# vue_data = remove_location(vue_data, 'With BotCam Crew')
+# 
+# ## Saving Data Frames
+#  save(vue_data, file = 'vue_data.Rda')
+#  save(receiver_data, file = 'receiver_data.Rda')
+ 
 
 #### Creating Networks -------------------------------------------
 
-get_adjacency = function(vue_df, 
-                         tag_id = FALSE, 
-                         time_period = FALSE){
+get_graph = function(vue_df, 
+                     tag_id = FALSE, 
+                     time_period = FALSE){
   ### A function to create an adjacency matrix from a vue dataset
   ### Arguments: 
     ### vue_df = a dataframe containing a vue export with 
@@ -98,10 +109,10 @@ get_adjacency = function(vue_df,
   
   # Build adjacency matrix, with receivers as nodes and fish 
     # movements as edges
-  adj_matrix = matrix(0, length(unique(vue_df$station)), 
-                      length(unique(vue_df$station)))
-  colnames(adj_matrix) = to
-  rownames(adj_matrix) = from
+    # Rows indicate movement from a receiver
+    # Columns indicate movement to a receiver
+  adj_matrix = matrix(0, nlevels(vue_df$station), 
+                      nlevels(vue_df$station))
   # If station changes, increase adjacency matrix value by one
   for (i in 2:length(vue_df$station)){
     if (vue_df$station[i] != vue_df$station[i-1]){
