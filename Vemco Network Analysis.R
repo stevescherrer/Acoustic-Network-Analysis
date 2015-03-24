@@ -17,8 +17,8 @@ user = function(username = FALSE){
     if (username == 'Steve' || username == 'steve'){
       setwd('/Users/stephenscherrer/Documents/Work/UH/Projects/dissertation work/Spacial Ecology/Acoustic-Network-Analysis/')
       }
-    if (username == 'Greg' || username == 'greg'){
-      setwd('gregs directory')
+    if (username == 'Greg' || username == 'greg'|| username == 'g'){
+      setwd('D:/Workspace/Acoustic-Network-Analysis/')
     }
   }
 
