@@ -23,12 +23,10 @@ user = function(username = FALSE){
   }
 
 #### Installing Principle Dependancies -----------------------------
-#install.packages('dplyr')
+
 library('dplyr')
-#install.packages('wes_anderson')
 library('wesanderson') # Functions: wes_palette
 source('utility_functions.R')
-#install.packages('igraph')
 library('igraph')
 
 #### Loading and Cleaning Datafiles --------------------------------
@@ -55,8 +53,9 @@ load_all_data = function(){
   vue_data = load_vemco(filename = 'VUE_Export_2015-Jan-20.csv',
                         filepath = '/Users/stephenscherrer/Dropbox/Lab Folder/Oahu Receiver Data Files/')
   
+}
   #### Cleaning data -------------------------------------------------
-  
+  processData = function() {
   ## Fixing missing Lat and Lons
   vue_data = clean_vue_lat_lon(vue_data, receiver_data)
   
