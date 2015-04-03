@@ -198,7 +198,7 @@ subset_time = function(vue_data, start = min(vue_data$datetime), end = max(vue_d
   return (new_vue_df)
 }
 
-<<<<<<< HEAD
+
 subset_tag = function(vue_data, tag_id){
   new_vue_df = vue_data[as.character(vue_data$tag_id) %in% as.character(tag_id), ]
   return (new_vue_df)
@@ -236,9 +236,6 @@ station_ids_map = function(vue_data){
   station_code_map = unique(station_number)
   return(station_code_map)
 }
-
-
-=======
 
 
 
@@ -302,6 +299,21 @@ analysis5 = function() {
 analysis6 = function() {
 #community detection
 #steve has code for this
+  node_groupings = function(graph_obj){
+    bf = fastgreedy.community(as.undirected(graph_obj)) # blondel et al ocmmnity.
+    #summary(bf)
+    plot(bf, graph_obj)  
+    library(ape)
+    dendPlot(bf, mode = 'phylo')
+    bflap = graph.laplacian(graph_obj)
+    eig.anal = eigen(bflap)
+    plot(eig.anal$values, col = zissou.blue, ylab = 'eigenvalue of graph laplacian')
+    faction = get.vertex.attribute(graph_obj, 'Community')
+    f.colors = as.character(length(faction))
+    #plot(faction, xlab = 'actor number', ylab = 'fiedler vector entry', col = f.colors)
+    #abline(0,0,lwd = 2)
+  }
+
 }
 
 
@@ -310,53 +322,6 @@ analysis6 = function() {
 
 
 
-
-
-
-#### Make graphs for each shark over appropriate time interval
-  #### Yearly?
->>>>>>> origin/In-Progress
-
-#### Analysis Notes -------------------------------------
-tag_ids = unique(vue_data$tag_id)
-station_ids = unique(vue_data$station)
-start_date = min(vue_data$datetime)
-end_date = max(vue_data$datetime)
-
-
-  
-# Analysis # 0 PCA yeah Steve knows something. In the paper, returned best KPA approx for GUP CUP So, we should do this if its easy
-
-# Analysis # 1 Finding temporally enduring paths So we have an adjacentcy matrix for each month for each fish Edges represent movement between nodes for a particiular fish find the evc for each edge durring that month find the average evc for each edge across the the entire experiment count how many months the edge was equal to or greater than the average A high number of months above average represents a temporally enduring edge A low number of months means the fish was just active that month
-
-# Analysis # 2 How important is each node (core node computation) Find graph over entire experiment 2 approaches Approach #1 remove sequentially Do all the imortant nodes get you to the same place How many ways are there to get to other places
-# IS THIS VALUABLE???
- 
-# Analysis # 3 Kernel based something or other Steve thinks this is dumb Greg thinks this is the control variable
-
-#install.packages('adehabitatHR')
- library('adehabitatHR')
-
-
-# Analysis # 4 Evaluating the importance of a path: F = the total flow between two points k = # pathways between 2 points F/k = importance of a path
- 
-# Analsis #5 For each edge, is this edge important to the species or just an individual Over entire experiment, find usage of each edge for each indivudal 2 approaches #1, binary matrix, sum the number of times an edge is used as a species (perhaps normalzie by number of individuals) #2, which edge is most important (has the highest weight) Which of these is the same.
- 
-# Analysis #6 Find groupings for all nodes, (expect oahu, penguin banks, seamount) Find groupings for just oahu (east side, west side???)
-node_groupings = function(graph_obj){
-bf = fastgreedy.community(as.undirected(graph_obj)) # blondel et al ocmmnity.
-#summary(bf)
-plot(bf, graph_obj)  
-library(ape)
-dendPlot(bf, mode = 'phylo')
-bflap = graph.laplacian(graph_obj)
-eig.anal = eigen(bflap)
-plot(eig.anal$values, col = zissou.blue, ylab = 'eigenvalue of graph laplacian')
-faction = get.vertex.attribute(graph_obj, 'Community')
-f.colors = as.character(length(faction))
-#plot(faction, xlab = 'actor number', ylab = 'fiedler vector entry', col = f.colors)
-#abline(0,0,lwd = 2)
-}
 
 
 
