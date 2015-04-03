@@ -17,18 +17,16 @@ user = function(username = FALSE){
     if (username == 'Steve' || username == 'steve'){
       setwd('/Users/stephenscherrer/Documents/Work/UH/Projects/dissertation work/Spacial Ecology/Acoustic-Network-Analysis/')
       }
-    if (username == 'Greg' || username == 'greg'){
-      setwd('gregs directory')
+    if (username == 'Greg' || username == 'greg'|| username == 'g'){
+      setwd('D:/Workspace/Acoustic-Network-Analysis/')
     }
   }
 
 #### Installing Principle Dependancies -----------------------------
-#install.packages('dplyr')
+
 library('dplyr')
-#install.packages('wes_anderson')
 library('wesanderson') # Functions: wes_palette
 source('utility_functions.R')
-#install.packages('igraph')
 library('igraph')
 
 #### Loading and Cleaning Datafiles --------------------------------
@@ -55,8 +53,9 @@ load_all_data = function(){
   vue_data = load_vemco(filename = 'VUE_Export_2015-Jan-20.csv',
                         filepath = '/Users/stephenscherrer/Dropbox/Lab Folder/Oahu Receiver Data Files/')
   
+}
   #### Cleaning data -------------------------------------------------
-  
+  processData = function() {
   ## Fixing missing Lat and Lons
   vue_data = clean_vue_lat_lon(vue_data, receiver_data)
   
@@ -199,6 +198,7 @@ subset_time = function(vue_data, start = min(vue_data$datetime), end = max(vue_d
   return (new_vue_df)
 }
 
+<<<<<<< HEAD
 subset_tag = function(vue_data, tag_id){
   new_vue_df = vue_data[as.character(vue_data$tag_id) %in% as.character(tag_id), ]
   return (new_vue_df)
@@ -238,6 +238,84 @@ station_ids_map = function(vue_data){
 }
 
 
+=======
+
+
+
+anlysis1 = function() {
+  #for each fish, for each time delta, graph the fish movement,
+  #convert a weighted matrix to a binary matirx
+  #add up all the binary matricies (across the time deltas), and see which ones have the highest values
+  
+  # Create 3d matrix [tagID, timedelta, reciever, receiver]
+  # for each fish
+  #  for each time delta
+  #    create adj matrix
+  # total += matrix we just made
+}
+
+
+anlysis2 = function() {
+  #How important is each node?
+  
+  #results = dict
+  # for each node in the graph:
+    # temp = delete.vertices(graph, v) //remove a node v
+    # results[node] = no.clusters(temp)  //counts the number of isolates
+  #print results
+}
+
+
+analysis3 = function() {
+  #Kernel based approach????
+}
+
+
+analysis4 = function() {
+  #How important is each edge?
+  
+  #F = max flow from a to b
+  #k = # of ways to get from a to b
+  #F/k = importance of an edge
+  # F = graph.maxflow(graph, source, target, capacity=NULL) //gives max flow from source to target
+  # k = vertex.connectivity(graph, source=NULL, target=NULL, checks=TRUE)
+  # F/k = importance of edge from a to b
+  # edges with high F/k are important
+}
+
+analysis5 = function() {
+  # Which paths are imprtant to a species?
+  # for each fish, make a binary matrix for whole experiment
+  # sum all fish matricies
+  # divide resulting matrix by # of fish
+  #//low numbers mean a path is only used by some individuals
+  #//high numbers mean a path is important to a species.
+  
+  
+  # for each tagID:
+  #   mat = make a binary matrix for the whole experiment
+  #   result += mat
+  # mat = mat / #tags
+  
+}
+
+analysis6 = function() {
+#community detection
+#steve has code for this
+}
+
+
+
+
+
+
+
+
+
+
+#### Make graphs for each shark over appropriate time interval
+  #### Yearly?
+>>>>>>> origin/In-Progress
 
 #### Analysis Notes -------------------------------------
 tag_ids = unique(vue_data$tag_id)
