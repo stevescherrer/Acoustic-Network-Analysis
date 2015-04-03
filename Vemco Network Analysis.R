@@ -194,6 +194,80 @@ get_graph = function(vue_df,
   return(vemco_graph)   
 }
 
+
+
+
+anlysis1 = function() {
+  #for each fish, for each time delta, graph the fish movement,
+  #convert a weighted matrix to a binary matirx
+  #add up all the binary matricies (across the time deltas), and see which ones have the highest values
+  
+  # Create 3d matrix [tagID, timedelta, reciever, receiver]
+  # for each fish
+  #  for each time delta
+  #    create adj matrix
+  # total += matrix we just made
+}
+
+
+anlysis2 = function() {
+  #How important is each node?
+  
+  #results = dict
+  # for each node in the graph:
+    # temp = delete.vertices(graph, v) //remove a node v
+    # results[node] = no.clusters(temp)  //counts the number of isolates
+  #print results
+}
+
+
+analysis3 = function() {
+  #Kernel based approach????
+}
+
+
+analysis4 = function() {
+  #How important is each edge?
+  
+  #F = max flow from a to b
+  #k = # of ways to get from a to b
+  #F/k = importance of an edge
+  # F = graph.maxflow(graph, source, target, capacity=NULL) //gives max flow from source to target
+  # k = vertex.connectivity(graph, source=NULL, target=NULL, checks=TRUE)
+  # F/k = importance of edge from a to b
+  # edges with high F/k are important
+}
+
+analysis5 = function() {
+  # Which paths are imprtant to a species?
+  # for each fish, make a binary matrix for whole experiment
+  # sum all fish matricies
+  # divide resulting matrix by # of fish
+  #//low numbers mean a path is only used by some individuals
+  #//high numbers mean a path is important to a species.
+  
+  
+  # for each tagID:
+  #   mat = make a binary matrix for the whole experiment
+  #   result += mat
+  # mat = mat / #tags
+  
+}
+
+analysis6 = function() {
+#community detection
+#steve has code for this
+}
+
+
+
+
+
+
+
+
+
+
 #### Make graphs for each shark over appropriate time interval
   #### Yearly?
 
