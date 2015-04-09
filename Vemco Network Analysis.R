@@ -180,26 +180,64 @@ get_graph = function(vue_df,
                       nlevels(vue_df$station))
   # If station changes, increase adjacency matrix value by one
   for (i in 2:length(vue_df$station)){
-    if (vue_df$station[i] != vue_df$station[i-1] &
-          vue_df$tag_id[i] == vue_df$tag_id[i-1]){
+    if(vue_df$tag_id[i] == vue_df$tag_id[i-1]){
       adj_matrix[as.numeric(vue_df$station[i-1]), 
                  as.numeric(vue_df$station[i])] = 
         adj_matrix[as.numeric(vue_df$station[i-1]), 
                    as.numeric(vue_df$station[i])] + 1
     }
   }
-  if(igraph) {
-    # Convert adjacency matrix into a graph object
-    vemco_graph = graph.adjacency(adj_matrix, mode = 'directed', 
-                                  weighted = TRUE)
-    # Return graph object
-    return(vemco_graph)  
-  }
-  else {
-    return (adj_matrix)
-  }
+
+  # Convert adjacency matrix into a graph object
+  vemco_graph = graph.adjacency(adj_matrix, mode = 'directed', 
+                                weighted = TRUE)
+  # Return graph object
+  return(vemco_graph)   
+} 
+
+subset_time = function(vue_data, start = min(vue_data$datetime), end = max(vue_data$datetime)){
+  new_vue_df = vue_data[which(vue_data$datetime >= as.POSIXct(start) & vue_data$datetime < as.POSIXct(end)), ]
+  return (new_vue_df)
 }
 
+
+subset_tag = function(vue_data, tag_id){
+  new_vue_df = vue_data[as.character(vue_data$tag_id) %in% as.character(tag_id), ]
+  return (new_vue_df)
+}
+
+station_ids = function(vue_data){
+  vue_data = vue_data[order(vue_data$station), ]
+  station_number = rep(0, length(vue_data$station))
+  for (i in 2:length(vue_data$station)){
+    if (vue_data$station[i] != vue_data$station[i-1]){
+      station_number[i] = station_number[i-1] + 1
+    } else {
+      station_number[i] = station_number[i-1]
+    }
+  }
+  vue_data$station_number = station_number+1
+  vue_data = vue_data[order(vue_data$tag_id, vue_data$datetime), ]
+  return(vue_data)
+}
+
+station_ids_map = function(vue_data){
+  vue_data = vue_data[order(vue_data$station), ]
+  station_number = as.data.frame(matrix(0, length(vue_data$station), 2))
+  colnames(station_number) = c('Station Number', 'Station Name')
+  for (i in 2:length(vue_data$station)){
+    if (vue_data$station[i] != vue_data$station[i-1]){
+      station_number[i, 1] = station_number[i-1, 1] + 1
+    } else {
+      station_number[i, 1] = station_number[i-1, 1]
+    }
+    station_number[i,2] = as.character(vue_data$station[i])
+  }
+  station_number[ ,1] = station_number[ ,1] + 1
+  station_number = station_number[2:length(station_number$'Station Number'), ]
+  station_code_map = unique(station_number)
+  return(station_code_map)
+}
 
 
 
@@ -271,6 +309,21 @@ analysis5 = function() {
 analysis6 = function() {
 #community detection
 #steve has code for this
+  node_groupings = function(graph_obj){
+    bf = fastgreedy.community(as.undirected(graph_obj)) # blondel et al ocmmnity.
+    #summary(bf)
+    plot(bf, graph_obj)  
+    library(ape)
+    dendPlot(bf, mode = 'phylo')
+    bflap = graph.laplacian(graph_obj)
+    eig.anal = eigen(bflap)
+    plot(eig.anal$values, col = zissou.blue, ylab = 'eigenvalue of graph laplacian')
+    faction = get.vertex.attribute(graph_obj, 'Community')
+    f.colors = as.character(length(faction))
+    #plot(faction, xlab = 'actor number', ylab = 'fiedler vector entry', col = f.colors)
+    #abline(0,0,lwd = 2)
+  }
+
 }
 
 
@@ -282,10 +335,9 @@ analysis6 = function() {
 
 
 
+#### Analysis from other paper ----------------------------
 #### Make graphs for each shark over appropriate time interval
   #### Yearly?
-
-
 
 #### Plot graphs
 
