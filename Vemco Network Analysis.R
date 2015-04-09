@@ -28,7 +28,7 @@ library('dplyr')
 library('wesanderson') # Functions: wes_palette
 source('utility_functions.R')
 library('igraph')
-
+library('intergraph')
 #### Loading and Cleaning Datafiles --------------------------------
 
 ### Loading data from saved dataframes
@@ -140,7 +140,8 @@ load_all_data = function(){
 
 get_graph = function(vue_df, 
                      tag_id = FALSE, 
-                     time_period = FALSE){
+                     time_period = FALSE,
+                     igraph=TRUE){
   ### A function to create an adjacency matrix from a vue dataset
   ### Arguments: 
     ### vue_df = a dataframe containing a vue export with 
@@ -187,11 +188,16 @@ get_graph = function(vue_df,
                    as.numeric(vue_df$station[i])] + 1
     }
   }
-  # Convert adjacency matrix into a graph object
-  vemco_graph = graph.adjacency(adj_matrix, mode = 'directed', 
-                                weighted = TRUE)
-  # Return graph object
-  return(vemco_graph)   
+  if(igraph) {
+    # Convert adjacency matrix into a graph object
+    vemco_graph = graph.adjacency(adj_matrix, mode = 'directed', 
+                                  weighted = TRUE)
+    # Return graph object
+    return(vemco_graph)  
+  }
+  else {
+    return (adj_matrix)
+  }
 }
 
 
@@ -245,13 +251,21 @@ analysis5 = function() {
   # divide resulting matrix by # of fish
   #//low numbers mean a path is only used by some individuals
   #//high numbers mean a path is important to a species.
-  
-  
-  # for each tagID:
-  #   mat = make a binary matrix for the whole experiment
-  #   result += mat
-  # mat = mat / #tags
-  
+  result = matrix(,21,21);
+  tagIds = unique(vue_data$tag_id)
+  first = FALSE
+  for (tagId in tagIds) {
+    #mat = make a binary matrix for the whole experiment
+    mat = get_graph(vue_data, tag_id=tagId,igraph=FALSE)
+    if (first) {
+      result = matrix
+      result = mat
+    }
+    else {
+      result = result + mat
+    }
+  }
+  return (result)
 }
 
 analysis6 = function() {
