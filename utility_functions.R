@@ -2,7 +2,7 @@
 #### A Collection of useful functions
 
 ### installing principle dependencies ----------------
-install.packages('wesanderson')
+#install.packages('wesanderson')
 library('wesanderson')
 
 

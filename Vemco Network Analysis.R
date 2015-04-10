@@ -9,7 +9,7 @@
 
 #### Clearing Workspace and Assigning Working Directory ------------
 rm(list=ls())
-
+numStations = 22
 user = function(username = FALSE){
   if (username == FALSE){
     print('Please enter a user name (Greg/Steve)')
@@ -141,7 +141,9 @@ load_all_data = function(){
 get_graph = function(vue_df, 
                      tag_id = FALSE, 
                      time_period = FALSE,
-                     igraph=TRUE){
+                     igraph=TRUE,
+                     binary=FALSE,
+                     removeLoops=FALSE){
   ### A function to create an adjacency matrix from a vue dataset
   ### Arguments: 
     ### vue_df = a dataframe containing a vue export with 
@@ -176,23 +178,33 @@ get_graph = function(vue_df,
     # movements as edges
     # Rows indicate movement from a receiver
     # Columns indicate movement to a receiver
-  adj_matrix = matrix(0, nlevels(vue_df$station), 
-                      nlevels(vue_df$station))
+  adj_matrix = matrix(0, numStations,numStations)
   # If station changes, increase adjacency matrix value by one
   for (i in 2:length(vue_df$station)){
     if(vue_df$tag_id[i] == vue_df$tag_id[i-1]){
-      adj_matrix[as.numeric(vue_df$station[i-1]), 
-                 as.numeric(vue_df$station[i])] = 
-        adj_matrix[as.numeric(vue_df$station[i-1]), 
-                   as.numeric(vue_df$station[i])] + 1
+      prevLoc = as.numeric(vue_df$station[i-1])
+      newLoc = as.numeric(vue_df$station[i])
+      if(binary) {
+        adj_matrix[prevLoc, newLoc] = 1
+      }
+      else {
+        adj_matrix[prevLoc, newLoc] =  adj_matrix[prevLoc, newLoc] + 1
+      }
     }
   }
-
-  # Convert adjacency matrix into a graph object
-  vemco_graph = graph.adjacency(adj_matrix, mode = 'directed', 
-                                weighted = TRUE)
+  if (removeLoops) {
+    for (i in 1:numStations) {
+      adj_matrix[i,i]=0
+    }
+  }
+  if(igraph) {
+    # Convert adjacency matrix into a graph object
+    vemco_graph = graph.adjacency(adj_matrix, mode = 'directed', 
+                                  weighted = TRUE)
+    return (vemco_graph)
+  }
   # Return graph object
-  return(vemco_graph)   
+  return(adj_matrix)   
 } 
 
 subset_time = function(vue_data, start = min(vue_data$datetime), end = max(vue_data$datetime)){
@@ -272,6 +284,7 @@ analysis3 = function() {
 
 analysis4 = function() {
   #How important is each edge?
+  #4 and 18 are the top left most nad bottom right most stations.
   
   #F = max flow from a to b
   #k = # of ways to get from a to b
@@ -280,6 +293,24 @@ analysis4 = function() {
   # k = vertex.connectivity(graph, source=NULL, target=NULL, checks=TRUE)
   # F/k = importance of edge from a to b
   # edges with high F/k are important
+  
+  graph = get_graph(vue_data,igraph=T,binary=F,removeLoops=F)
+  result = matrix(,numStations,numStations);
+  for(source in 1:numStations) {
+    for(target in 1:numStations) {
+      if(source!=target) {
+        flow = graph.maxflow(graph, source, target, capacity=NULL)
+        numPaths = vertex.connectivity(graph, source=NULL, target=NULL, checks=TRUE)
+        if(numPaths> 0) {
+          result[source,target] = flow$value/numPaths
+        }
+        else {
+          result[source,target] = 0
+        }
+      }
+    }
+  }
+  return (result)
 }
 
 analysis5 = function() {
@@ -289,15 +320,16 @@ analysis5 = function() {
   # divide resulting matrix by # of fish
   #//low numbers mean a path is only used by some individuals
   #//high numbers mean a path is important to a species.
-  result = matrix(,21,21);
+  result = matrix(,numStations,numStations);
   tagIds = unique(vue_data$tag_id)
-  first = FALSE
+  first = TRUE
   for (tagId in tagIds) {
     #mat = make a binary matrix for the whole experiment
-    mat = get_graph(vue_data, tag_id=tagId,igraph=FALSE)
+    mat = get_graph(vue_data, tag_id=tagId,igraph=FALSE,binary=TRUE)
     if (first) {
       result = matrix
       result = mat
+      first=FALSE
     }
     else {
       result = result + mat
