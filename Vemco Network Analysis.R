@@ -253,7 +253,8 @@ station_ids_map = function(vue_data){
 
 
 
-anlysis1 = function() {
+analysis1 = function() {
+  #temporally enduring pathwaysis.connected(graph,
   #for each fish, for each time delta, graph the fish movement,
   #convert a weighted matrix to a binary matirx
   #add up all the binary matricies (across the time deltas), and see which ones have the highest values
@@ -266,19 +267,26 @@ anlysis1 = function() {
 }
 
 
-anlysis2 = function() {
+analysis2 = function() {
   #How important is each node?
-  
   #results = dict
   # for each node in the graph:
-    # temp = delete.vertices(graph, v) //remove a node v
-    # results[node] = no.clusters(temp)  //counts the number of isolates
+  # temp = delete.vertices(graph, v) //remove a node v
+  # results[node] = no.clusters(temp)  //counts the number of isolates
   #print results
+  rslts = array(numStations)
+  for (i in 1:numStations) {
+    graph = get_graph(vue_data,igraph=T,binary=F,removeLoops=F)
+    delete.vertices(graph,i)
+    rslts[i] = no.clusters(graph,mode="strong")
+  }
+  return (rslts)
+
 }
 
 
 analysis3 = function() {
-  #Kernel based approach????
+  #Eigen Vector Centrality
 }
 
 
@@ -294,7 +302,7 @@ analysis4 = function() {
   # F/k = importance of edge from a to b
   # edges with high F/k are important
   
-  graph = get_graph(vue_data,igraph=T,binary=F,removeLoops=F)
+  graph = get_graph(vue_data,igraph=T,binary=F,removeLoops=T)
   result = matrix(,numStations,numStations);
   for(source in 1:numStations) {
     for(target in 1:numStations) {
