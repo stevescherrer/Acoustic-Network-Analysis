@@ -432,6 +432,7 @@ runall = function() {
   rslt$edgeImp = analysis4()
   rslt$speciesPath = analysis5()
   rslt$grouping = analysis6()
+  return(rslt)
 }
 
 
