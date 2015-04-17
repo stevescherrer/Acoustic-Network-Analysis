@@ -136,6 +136,12 @@ load_all_data = function(){
  ## Pulling only those tag IDS that appear in the data
  tag_ids = unique(vue_data$tag_id)
 
+
+subset_time = function(vue_data, start = min(vue_data$datetime), end = max(vue_data$datetime)){
+  new_vue_df = vue_data[which(vue_data$datetime >= as.POSIXct(start) & vue_data$datetime < as.POSIXct(end)), ]
+  return (new_vue_df)
+}
+
 #### Creating Networks -------------------------------------------
 
 get_graph = function(vue_df, 
@@ -143,7 +149,9 @@ get_graph = function(vue_df,
                      time_period = FALSE,
                      igraph=TRUE,
                      binary=FALSE,
-                     removeLoops=FALSE){
+                     removeLoops=FALSE,
+                     start=FALSE,
+                     end=FALSE){
   ### A function to create an adjacency matrix from a vue dataset
   ### Arguments: 
     ### vue_df = a dataframe containing a vue export with 
@@ -166,6 +174,15 @@ get_graph = function(vue_df,
   if (time_period == FALSE){ # if no dates specified, all dates used
     time_period = c(min(vue_df$datetime), max(vue_df$datetime))
   }
+  else {
+    if (start == FALSE) {
+      start = min(vue_data$datetime)
+    }
+    if (end == FALSE) {
+      end = max(vue_data$datetime)
+    }
+  }
+  
   # Pulling out detections for a specific tag
   vue_df = clean_vue(vue_data, tag_id, exclude = FALSE)
   
@@ -207,11 +224,6 @@ get_graph = function(vue_df,
   return(adj_matrix)   
 } 
 
-subset_time = function(vue_data, start = min(vue_data$datetime), end = max(vue_data$datetime)){
-  new_vue_df = vue_data[which(vue_data$datetime >= as.POSIXct(start) & vue_data$datetime < as.POSIXct(end)), ]
-  return (new_vue_df)
-}
-
 
 subset_tag = function(vue_data, tag_id){
   new_vue_df = vue_data[as.character(vue_data$tag_id) %in% as.character(tag_id), ]
@@ -251,32 +263,73 @@ station_ids_map = function(vue_data){
   return(station_code_map)
 }
 
-
+list_days = function(vue_data) {
+  for(i in 1:length(unique(vue_data$tag_id))){
+    indv_data = vue_data[vue_data$tag_id == unique(vue_data$tag_id)[i], ]
+    print(indv_data$tag_id[1])
+    print(difftime(time1=max(indv_data$datetime), time2 = min(indv_data$datetime), units = 'days'))
+  }
+}
 
 analysis1 = function() {
-  #temporally enduring pathwaysis.connected(graph,
-  #for each fish, for each time delta, graph the fish movement,
-  #convert a weighted matrix to a binary matirx
-  #add up all the binary matricies (across the time deltas), and see which ones have the highest values
+  # temporally enduring pathways
+  # for each fish, for each time delta, graph the fish movement,
+  # convert a weighted matrix to a binary matirx
+  # add up all the binary matricies (across the time deltas), and see which ones have the highest values
   
   # Create 3d matrix [tagID, timedelta, reciever, receiver]
   # for each fish
   #  for each time delta
   #    create adj matrix
   # total += matrix we just made
+  # stores the final result
+  result = matrix(,numStations,numStations);
+  # for each fish
+  ids = unique(vue_data$tag_id)
+  first = TRUE
+  for (id in ids) {
+    tag_vue = clean_vue(vue_data, id, exclude = FALSE)
+    # for each timeperiod
+    startDateString = "2011-11-1 00:00:00"
+    endDateString = "2014-10-1 00:00:00"
+    startDate = as.POSIXlt(startDateString)
+    endDate = as.POSIXlt(endDateString)
+    periodStart = as.POSIXlt(startDateString)
+   
+    while (periodStart < endDate) {
+      periodEnd = periodStart
+      periodEnd$year = periodEnd$year + 1
+      temp = get_graph(tag_vue, time_period = TRUE, igraph=FALSE, binary=TRUE,removeLoops=TRUE,
+                       start = periodStart, end = periodEnd)
+      # Add the matrix temp to result
+      if(first) {
+        first=FALSE
+        result = temp
+      }
+      result = result + temp
+      periodStart = periodEnd
+      print(id)
+      print(periodStart)
+    }
+  }
+  return(result)
+  
 }
 
 
 analysis2 = function() {
-  #How important is each node?
+  #How important is each node as a transient point?
   #results = dict
   # for each node in the graph:
   # temp = delete.vertices(graph, v) //remove a node v
   # results[node] = no.clusters(temp)  //counts the number of isolates
   #print results
+  
   rslts = array(numStations)
+  base_graph = get_graph(vue_data,igraph=T,binary=F,removeLoops=F)
+  graph=matrix(,numStations,numStations)
   for (i in 1:numStations) {
-    graph = get_graph(vue_data,igraph=T,binary=F,removeLoops=F)
+    graph = base_graph
     delete.vertices(graph,i)
     rslts[i] = no.clusters(graph,mode="strong")
   }
@@ -287,6 +340,9 @@ analysis2 = function() {
 
 analysis3 = function() {
   #Eigen Vector Centrality
+  graph = get_graph(vue_data,igraph=T,binary=F,removeLoops=F)
+  return (evcent(graph, directed = FALSE, scale = TRUE, weights = NULL,
+          options = igraph.arpack.default)$vector)
 }
 
 
@@ -305,10 +361,11 @@ analysis4 = function() {
   graph = get_graph(vue_data,igraph=T,binary=F,removeLoops=T)
   result = matrix(,numStations,numStations);
   for(source in 1:numStations) {
-    for(target in 1:numStations) {
-      if(source!=target) {
-        flow = graph.maxflow(graph, source, target, capacity=NULL)
-        numPaths = vertex.connectivity(graph, source=NULL, target=NULL, checks=TRUE)
+    for(target in 1:1) {
+      if(source!=target && graph[source,target]==0) {
+        flow = graph.maxflow(graph, source, target, capacity=E(graph)$weight)
+        print(flow$value)
+        numPaths = vertex.connectivity(graph, source=source, target=target, checks=TRUE)
         if(numPaths> 0) {
           result[source,target] = flow$value/numPaths
         }
@@ -367,7 +424,15 @@ analysis6 = function() {
 }
 
 
-
+runall = function() {
+  rslt={}
+  rslt$timePath=analysis1()
+  rslt$transientPath = analysis2()
+  rslt$evc = analysis3()
+  rslt$edgeImp = analysis4()
+  rslt$speciesPath = analysis5()
+  rslt$grouping = analysis6()
+}
 
 
 
