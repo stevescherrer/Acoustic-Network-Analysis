@@ -29,6 +29,8 @@ library('wesanderson') # Functions: wes_palette
 source('utility_functions.R')
 library('igraph')
 library('intergraph')
+# install.packges('marmap')
+library('marmap')
 #### Loading and Cleaning Datafiles --------------------------------
 
 ### Loading data from saved dataframes
@@ -508,6 +510,60 @@ myImagePlot <- function(x, ...){
         xaxt="n")
   
   layout(1)
+}
+# ----- END plot function ----- #
+
+# ----- Define a function for plotting a chart of movements ------#
+
+
+plot_movements = function(adj_matrix, vue_data, 
+                          receiver_data, bottomfish_tag_ids = FALSE, 
+                          filename = 'chartfile.png'){
+  if (bottomfish_tag_ids[1] == FALSE){
+    bottomfish_tag_ids = unique(as.numeric(levels(
+      vue_data$tag_id))[vue_data$tag_id])}
+  
+  #### Loading in NOAA Bathymetry basemap
+  if(exists('bathymetry') == FALSE){
+    bathymetry = getNOAA.bathy(lon1 = -158.8, 
+                               lon2 = -157.170, 
+                               lat1 = 22.208, 
+                               lat2 = 20.386,
+                               resolution = 1)
+  }
+  
+  station_map = station_ids_map(vue_data)
+  station_map_ll = merge(x = station_map, y = receiver_data, 
+                         by.x = "Station Name", by.y = "station_name")
+  
+  for (id in bottomfish_tag_ids){
+    indv_data = vue_data[vue_data$tag_id == id, ]
+    png(paste(id, filename))
+   
+    ## Plotting basemap
+    plot.bathy(bathymetry, land = TRUE, image=TRUE, 
+               bpal = gray.colors(10), deepest.isobath = c(-5000), 
+               shallowest.isobath = c(0), step = c(250), drawlabels = TRUE)
+    ## Adding scale legend
+    scaleBathy(bathymetry, deg = .5, cex = .5)
+    #scaleBathy(bathymetry, deg = .48, cex = .5)
+    ## Adding receiver locations
+    points(lat~lon, data = receiver_data, pch = 19, col = 'red', cex = .4)
+
+    ## Plotting fish movements
+    points(lat~lon, data = indv_data, col = 'blue',cex = 0.6, pch = 19)
+    for(i in 1:nrow(adj_matrix)){
+      for(j in 1:ncol(adj_matrix)){
+        lat = c(lat, station_map_ll$lat[station_map_ll$"Station Number" == i][1],
+                station_map_ll$lat[station_map_ll$"Station Number" == j][1])
+        lon = c(lon, station_map_ll$lon[station_map_ll$"Station Number" == i][1],
+                station_map_ll$lon[station_map_ll$"Station Number" == j][1])
+        lines(lat~lon, col = 'blue', lty = 1, lwd = 1*(adj_matrix[i,j]/max(adj_matrix)))
+      }
+    }
+    dev.off()
+  }
+  return(bathymetry)
 }
 # ----- END plot function ----- #
 
