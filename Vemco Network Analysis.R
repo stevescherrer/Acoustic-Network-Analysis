@@ -9,77 +9,151 @@
 
 #### Clearing Workspace and Assigning Working Directory ------------
 rm(list=ls())
-setwd('/Users/stephenscherrer/Documents/Work/UH/Projects/dissertation work/Spacial Ecology/Acoustic-Network-Analysis/')
+numStations = 22
+user = function(username = FALSE){
+  if (username == FALSE){
+    print('Please enter a user name (Greg/Steve)')
+  }
+    if (username == 'Steve' || username == 'steve'){
+      setwd('/Users/stephenscherrer/Documents/Work/UH/Projects/dissertation work/Spacial Ecology/Acoustic-Network-Analysis/')
+      }
+    if (username == 'Greg' || username == 'greg'|| username == 'g'){
+      setwd('D:/Workspace/Acoustic-Network-Analysis/')
+    }
+  }
 
 #### Installing Principle Dependancies -----------------------------
-#install.packages('dplyr')
-library('dplyr')
-#install.packages('wes_anderson')
-library('wesanderson') # Functions: wes_palette
-source('/Users/stephenscherrer/Documents/Programming/R/utility_functions.R')
-#install.packages('igraph')
-library('igraph')
 
+library('dplyr')
+library('wesanderson') # Functions: wes_palette
+source('utility_functions.R')
+library('igraph')
+library('intergraph')
+# install.packges('marmap')
+library('marmap')
 #### Loading and Cleaning Datafiles --------------------------------
 
 ### Loading data from saved dataframes
 load('vue_data.Rda')
 load('receiver_data.Rda')
 
-# ### Constructing dataframes 
-# ## Importing receiver data
-# receiver_data = load_receiver(filename = 'DEPLOYMENT_RECOVERY_LOG.csv', 
-#                               filepath = '/Users/stephenscherrer/Dropbox/Lab Folder/Oahu Receiver Data Files/')
-# 
-# ## Import tagging log
-# tagging_data = load_tagging_data(filename = 'Bottomfish_Tag_Master.csv',
-#                                  filepath = '/Users/stephenscherrer/Dropbox/Lab Folder/Oahu Receiver Data Files/')
-# 
-# ## Importing VUE Data
-# vue_data = load_vemco(filename = 'VUE_Export_2015-Jan-20.csv',
-#                       filepath = '/Users/stephenscherrer/Dropbox/Lab Folder/Oahu Receiver Data Files/')
-# 
-# #### Cleaning data -------------------------------------------------
-# 
-# ## Fixing missing Lat and Lons
-# vue_data = clean_vue_lat_lon(vue_data, receiver_data)
-# 
-# ## Removing detections from botcam crew
-# vue_data = remove_location(vue_data, 'With BotCam Crew')
-# 
-# ## Removing tags in bottomfish tagging database that are not, 
-#   ## or likely not actual tagged bottomfish (at cross 
-#   ## maybe monchong?)
-#  vue_data = clean_vue(vue_data, c(57451, 37954), exclude = TRUE)
-# 
-# # Pulling all tag ids associated with opakapaka species
-# tag_ids = na.exclude(tagging_data$vem_tag_id[
-#   tagging_data$species == 'Opakapaka']) 
-# 
-# # Converting tag ids from factor to numerics
-# tag_ids = unique(as.numeric(levels(tag_ids))[tag_ids])
-# 
-# ## Removing Vue data for tags not associated with tag_ids of interest
-# vue_data = clean_vue(vue_data, tag_ids, exclude = FALSE)
-# 
-# ## Removing vue data from unwanted tags
-# # unwanted_tags = c()
-# # vue_data = clean_vue(vue_data, unwanted_tags, exclude = TRUE)
-#   
-# ## Removing botcam detections from botcam drops because receivers 
-#   ## were only deployed for 45 min.
-# vue_data = remove_location(vue_data, 'With BotCam Crew')
-# 
-# ## Saving Data Frames
-#  save(vue_data, file = 'vue_data.Rda')
-#  save(receiver_data, file = 'receiver_data.Rda')
- 
+load_all_data = function(){
+  #### YOU MUST NEVER RUN THIS GREG. OR YOU WILL BE HAUNTED. BY A SEXY
+  #### GHOST. YOU THINK ITS COOL, BUT SHE'S A GHOST. THATS MESSED UP.
+  #### ALSO, SHE HAS A GHOST PENIS...
+  
+  ### Constructing dataframes 
+  ## Importing receiver data
+  receiver_data = load_receiver(filename = 'DEPLOYMENT_RECOVERY_LOG.csv', 
+                                filepath = '/Users/stephenscherrer/Dropbox/Lab Folder/Oahu Receiver Data Files/')
+  
+  ## Import tagging log
+  tagging_data = load_tagging_data(filename = 'Bottomfish_Tag_Master.csv',
+                                   filepath = '/Users/stephenscherrer/Dropbox/Lab Folder/Oahu Receiver Data Files/')
+  
+  ## Importing VUE Data
+  vue_data = load_vemco(filename = 'VUE_Export_2015-Jan-20.csv',
+                        filepath = '/Users/stephenscherrer/Dropbox/Lab Folder/Oahu Receiver Data Files/')
+  
+}
+  #### Cleaning data -------------------------------------------------
+  processData = function() {
+  ## Fixing missing Lat and Lons
+  vue_data = clean_vue_lat_lon(vue_data, receiver_data)
+  
+  ## Removing detections from botcam crew
+  vue_data = remove_location(vue_data, 'With BotCam Crew')
+  
+  ## Removing tags in bottomfish tagging database that are not, 
+    ## or likely not actual tagged bottomfish (at cross 
+    ## maybe monchong?)
+   vue_data = clean_vue(vue_data, c(57451, 37954), exclude = TRUE)
+  
+  # Pulling all tag ids associated with opakapaka species
+  #tag_ids = na.exclude(tagging_data$vem_tag_id[
+    #tagging_data$species == 'Opakapaka']) 
+  
+  ## Converting tag ids from factor to numerics
+  #tag_ids = unique(as.numeric(levels(tag_ids))[tag_ids])
+  
+  ## Pulling all tag ids associated with white shark species
+  # Tag IDs for White Sharks
+  tag_ids = c(633, 68295, 8893, 8832, 1425, 29700, 2139, 8892, 9095, 
+              3430, 3580, 3407, 18616, 3265, 52933, 68291, 630, 62142, 
+              88758, 83056, 83054, 88767, 88765, 46863, 46862, 46861, 
+              58432, 100521, 29711, 3339, 3281, 3402, 18596, 29710, 
+              41761, 41753, 41760, 41739, 41748, 41773, 52928, 49019, 
+              52930, 52934, 62015, 61910, 62016, 61907, 61902, 62012, 
+              62019, 62011, 62010, 61899, 61904, 62020, 61898, 62014, 
+              62013, 52873, 62021, 60982, 60983, 62017, 68281, 68308, 
+              642, 68321, 68286, 68320, 68319, 68290, 624, 637, 622, 
+              640, 635, 623, 62121, 46109, 618, 52446, 52456, 52458, 
+              111194, 87568, 68317, 10565, 61911, 61914, 62018, 61909, 
+              6841, 627, 6847, 6840, 645, 78173, 655, 654, 6843, 52426, 
+              52422, 52927, 61900, 111190, 58446, 617, 52428, 46114, 
+              52455, 659, 46111, 46118, 58460, 58453, 58445, 78159, 646, 
+              62145, 52436, 87568, 653, 616, 52452, 46116, 52454, 52425, 
+              68272, 12827, 46108, 52435, 46105, 52434, 52433, 52442, 
+              87597, 52419, 62127, 62146, 46110, 62140, 46115, 46106, 
+              46097, 59108, 58438, 58431, 58448, 58456, 58458, 6858, 
+              62122, 62125, 62126, 62131, 12828, 68251, 68315, 46107, 
+              52449, 58447, 52039, 61906, 59112, 52929, 46117, 46094, 
+              52440, 631, 78172, 62137, 68253, 629, 68282, 68314, 68305, 
+              61908, 68252, 68306, 68309, 641, 648, 651, 657, 6844, 62138, 
+              6857, 62133, 62124, 46104, 46100, 61905, 52450, 78168, 6845, 
+              58455, 52429, 78145, 6851, 52439, 46103, 52432, 46099, 58452, 
+              58434, 46102, 2994, 111182, 58437, 59114, 108314, 59106, 33560, 
+              33543, 102061, 656, 625, 68307, 59105, 62147, 660, 52041, 87562, 
+              58435, 6852, 58459, 111193, 58457, 58442, 33549, 59110, 33539, 
+              33535, 33533, 33531, 68310, 103300, 33530, 33540, 33541, 33538, 
+              59109, 33532, 33537, 33542, 33548, 68307, 59113, 87602, 658, 52457, 
+              46095, 33546, 58433, 6859, 78153, 68249, 62149, 58441, 78176, 52421, 
+              46098, 638, 68316, 6848, 59107, 6850, 58443, 78177, 111195, 
+              628, 78175, 52420, 639, 62148, 62022, 46101, 52438, 52423, 
+              58444, 62134, 78171, 68312, 6855, 58440, 62150, 52431, 636, 
+              68287, 78152, 643, 62130, 87569, 6853, 78141, 62132, 68311, 
+              62144, 52424, 62139, 6846, 78169, 78136, 103307, 52437, 46112, 
+              58449, 49018, 6856, 78167, 650, 68250, 52427, 58439, 632, 
+              58451, 52451, 49075, 87563, 85532, 59111, 33545, 33544, 33547, 
+              62123, 58450, 87570, 6854, 46096, 52430, 52447, 62128, 62136, 
+              62141, 46113, 62143, 62129, 52444, 52441, 6849, 58454, 58436, 
+              6842 )
+  
+  ## Removing Vue data for tags not associated with tag_ids of interest
+  vue_data = clean_vue(vue_data, tag_ids, exclude = FALSE)
+  
+  ## Removing vue data from unwanted tags
+  # unwanted_tags = c()
+  # vue_data = clean_vue(vue_data, unwanted_tags, exclude = TRUE)
+    
+  ## Removing botcam detections from botcam drops because receivers 
+    ## were only deployed for 45 min.
+  vue_data = remove_location(vue_data, 'With BotCam Crew')
+  
+  ## Saving Data Frames
+    save(vue_data, file = 'vue_data.Rda')
+    save(receiver_data, file = 'receiver_data.Rda')
+ }
+
+ ## Pulling only those tag IDS that appear in the data
+ tag_ids = unique(vue_data$tag_id)
+
+
+subset_time = function(vue_data, start = min(vue_data$datetime), end = max(vue_data$datetime)){
+  new_vue_df = vue_data[which(vue_data$datetime >= as.POSIXct(start) & vue_data$datetime < as.POSIXct(end)), ]
+  return (new_vue_df)
+}
 
 #### Creating Networks -------------------------------------------
 
 get_graph = function(vue_df, 
                      tag_id = FALSE, 
-                     time_period = FALSE){
+                     time_period = FALSE,
+                     igraph=TRUE,
+                     binary=FALSE,
+                     removeLoops=FALSE,
+                     start=FALSE,
+                     end=FALSE){
   ### A function to create an adjacency matrix from a vue dataset
   ### Arguments: 
     ### vue_df = a dataframe containing a vue export with 
@@ -102,8 +176,20 @@ get_graph = function(vue_df,
   if (time_period == FALSE){ # if no dates specified, all dates used
     time_period = c(min(vue_df$datetime), max(vue_df$datetime))
   }
+  else {
+    if (start == FALSE) {
+      start = min(vue_data$datetime)
+    }
+    if (end == FALSE) {
+      end = max(vue_data$datetime)
+    }
+  }
+  
   # Pulling out detections for a specific tag
   vue_df = clean_vue(vue_data, tag_id, exclude = FALSE)
+  
+  # Order vue_df by tag id
+    vue_df = vue_df[order(vue_df$tag_id, vue_df$datetime), ]
   
   # To Do: pull out receivers present during a specific time period
   
@@ -111,26 +197,382 @@ get_graph = function(vue_df,
     # movements as edges
     # Rows indicate movement from a receiver
     # Columns indicate movement to a receiver
-  adj_matrix = matrix(0, nlevels(vue_df$station), 
-                      nlevels(vue_df$station))
+  adj_matrix = matrix(0, numStations,numStations)
   # If station changes, increase adjacency matrix value by one
-  for (i in 2:length(vue_df$station)){
-    if (vue_df$station[i] != vue_df$station[i-1]){
-      adj_matrix[as.numeric(vue_df$station[i-1]), 
-                 as.numeric(vue_df$station[i])] = 
-        adj_matrix[as.numeric(vue_df$station[i-1]), 
-                   as.numeric(vue_df$station[i])] + 1
+  for (i in 2:length(vue_df$station_number)){
+    if(vue_df$tag_id[i] == vue_df$tag_id[i-1]){
+      prevLoc = as.numeric(vue_df[i-1])
+      newLoc = as.numeric(vue_df$station_number[i])
+      if(binary) {
+        adj_matrix[prevLoc, newLoc] = 1
+      }
+      else {
+        adj_matrix[prevLoc, newLoc] =  adj_matrix[prevLoc, newLoc] + 1
+      }
     }
   }
-  # Convert adjacency matrix into a graph object
-  vemco_graph = graph.adjacency(adj_matrix, mode = 'directed', 
-                                weighted = TRUE)
+  if (removeLoops) {
+    for (i in 1:numStations) {
+      adj_matrix[i,i]=0
+    }
+  }
+  if(igraph) {
+    # Convert adjacency matrix into a graph object
+    vemco_graph = graph.adjacency(adj_matrix, mode = 'directed', 
+                                  weighted = TRUE)
+    return (vemco_graph)
+  }
   # Return graph object
-  return(vemco_graph)   
+  return(adj_matrix)   
+} 
+
+
+subset_tag = function(vue_data, tag_id){
+  new_vue_df = vue_data[as.character(vue_data$tag_id) %in% as.character(tag_id), ]
+  return (new_vue_df)
 }
 
-#### Make graphs for each fish over appropriate time interval
-  #### Monthly? Total study durration for such limited data?
+station_ids = function(vue_data){
+  vue_data = vue_data[order(vue_data$station), ]
+  station_number = rep(0, length(vue_data$station))
+  for (i in 2:length(vue_data$station)){
+    if (vue_data$station[i] != vue_data$station[i-1]){
+      station_number[i] = station_number[i-1] + 1
+    } else {
+      station_number[i] = station_number[i-1]
+    }
+  }
+  vue_data$station_number = station_number+1
+  vue_data = vue_data[order(vue_data$tag_id, vue_data$datetime), ]
+  return(vue_data)
+}
+
+station_ids_map = function(vue_data){
+  vue_data = vue_data[order(vue_data$station), ]
+  station_number = as.data.frame(matrix(0, length(vue_data$station), 2))
+  colnames(station_number) = c('Station Number', 'Station Name')
+  for (i in 2:length(vue_data$station)){
+    if (vue_data$station[i] != vue_data$station[i-1]){
+      station_number[i, 1] = station_number[i-1, 1] + 1
+    } else {
+      station_number[i, 1] = station_number[i-1, 1]
+    }
+    station_number[i,2] = as.character(vue_data$station[i])
+  }
+  station_number[ ,1] = station_number[ ,1] + 1
+  station_number = station_number[2:length(station_number$'Station Number'), ]
+  station_code_map = unique(station_number)
+  return(station_code_map)
+}
+
+list_days = function(vue_data) {
+  for(i in 1:length(unique(vue_data$tag_id))){
+    indv_data = vue_data[vue_data$tag_id == unique(vue_data$tag_id)[i], ]
+    print(indv_data$tag_id[1])
+    print(difftime(time1=max(indv_data$datetime), time2 = min(indv_data$datetime), units = 'days'))
+  }
+}
+
+analysis1 = function() {
+  # temporally enduring pathways
+  # for each fish, for each time delta, graph the fish movement,
+  # convert a weighted matrix to a binary matirx
+  # add up all the binary matricies (across the time deltas), and see which ones have the highest values
+  
+  # Create 3d matrix [tagID, timedelta, reciever, receiver]
+  # for each fish
+  #  for each time delta
+  #    create adj matrix
+  # total += matrix we just made
+  # stores the final result
+  result = matrix(,numStations,numStations);
+  # for each fish
+  ids = unique(vue_data$tag_id)
+  vue_data = station_ids(vue_data)
+  first = TRUE
+  for (id in ids) {
+    tag_vue = clean_vue(vue_data, id, exclude = FALSE)
+    # for each timeperiod
+    startDateString = "2011-11-1 00:00:00"
+    endDateString = "2014-10-1 00:00:00"
+    startDate = as.POSIXlt(startDateString)
+    endDate = as.POSIXlt(endDateString)
+    periodStart = as.POSIXlt(startDateString)
+   
+    while (periodStart < endDate) {
+      periodEnd = periodStart
+      periodEnd$year = periodEnd$year + 1
+      temp = get_graph(tag_vue, time_period = TRUE, igraph=FALSE, binary=TRUE,removeLoops=TRUE,
+                       start = periodStart, end = periodEnd)
+      # Add the matrix temp to result
+      if(first) {
+        first=FALSE
+        result = temp
+      }
+      result = result + temp
+      periodStart = periodEnd
+      print(id)
+      print(periodStart)
+    }
+  }
+  return(result)
+  
+}
+
+
+analysis2 = function() {
+  #How important is each node as a transient point?
+  #results = dict
+  # for each node in the graph:
+  # temp = delete.vertices(graph, v) //remove a node v
+  # results[node] = no.clusters(temp)  //counts the number of isolates
+  #print results
+  
+  rslts = array(numStations)
+  base_graph = get_graph(vue_data,igraph=T,binary=F,removeLoops=F)
+  graph=matrix(,numStations,numStations)
+  for (i in 1:numStations) {
+    graph = base_graph
+    delete.vertices(graph,i)
+    rslts[i] = no.clusters(graph,mode="strong")
+  }
+  return (rslts)
+
+}
+
+
+analysis3 = function() {
+  #Eigen Vector Centrality
+  graph = get_graph(vue_data,igraph=T,binary=F,removeLoops=F)
+  return (evcent(graph, directed = FALSE, scale = TRUE, weights = NULL,
+          options = igraph.arpack.default)$vector)
+}
+
+
+analysis4 = function() {
+  #How important is each edge?
+  #4 and 18 are the top left most nad bottom right most stations.
+  
+  #F = max flow from a to b
+  #k = # of ways to get from a to b
+  #F/k = importance of an edge
+  # F = graph.maxflow(graph, source, target, capacity=NULL) //gives max flow from source to target
+  # k = vertex.connectivity(graph, source=NULL, target=NULL, checks=TRUE)
+  # F/k = importance of edge from a to b
+  # edges with high F/k are importantw
+  
+  graph = get_graph(vue_data,igraph=T,binary=F,removeLoops=T)
+  result = matrix(,numStations,numStations);
+  for(source in 1:numStations) {
+    for(target in 1:numStations) {
+      if(source!=target && graph[source,target]==0) {
+        flow = graph.maxflow(graph, source, target, capacity=E(graph)$weight)
+        print(flow$value)
+        numPaths = vertex.connectivity(graph, source=source, target=target, checks=TRUE)
+        if(numPaths> 0) {
+          result[source,target] = flow$value/numPaths
+        }
+        else {
+          result[source,target] = 0
+        }
+      }
+    }
+  }
+  return (result)
+}
+
+analysis5 = function() {
+  # Which paths are imprtant to a species?
+  # for each fish, make a binary matrix for whole experiment
+  # sum all fish matricies
+  # divide resulting matrix by # of fish
+  #//low numbers mean a path is only used by some individuals
+  #//high numbers mean a path is important to a species.
+  result = matrix(,numStations,numStations);
+  tagIds = unique(vue_data$tag_id)
+  first = TRUE
+  for (tagId in tagIds) {
+    #mat = make a binary matrix for the whole experiment
+    mat = get_graph(vue_data, tag_id=tagId,igraph=FALSE,binary=TRUE)
+    if (first) {
+      result = matrix
+      result = mat
+      first=FALSE
+    }
+    else {
+      result = result + mat
+    }
+  }
+  return (result)
+}
+
+analysis6 = function() {
+#community detection
+#steve has code for this
+  node_groupings = function(graph_obj){
+    bf = fastgreedy.community(as.undirected(graph_obj)) # blondel et al ocmmnity.
+    #summary(bf)
+    plot(bf, graph_obj)  
+    library(ape)
+    dendPlot(bf, mode = 'phylo')
+    bflap = graph.laplacian(graph_obj)
+    eig.anal = eigen(bflap)
+    plot(eig.anal$values, col = zissou.blue, ylab = 'eigenvalue of graph laplacian')
+    faction = get.vertex.attribute(graph_obj, 'Community')
+    f.colors = as.character(length(faction))
+    #plot(faction, xlab = 'actor number', ylab = 'fiedler vector entry', col = f.colors)
+    #abline(0,0,lwd = 2)
+  }
+
+}
+
+
+runall = function() {
+  rslt={}
+  rslt$timePath=analysis1()
+  rslt$transientPath = analysis2()
+  rslt$evc = analysis3()
+  rslt$edgeImp = analysis4()
+  rslt$speciesPath = analysis5()
+  rslt$grouping = analysis6()
+  return(rslt)
+}
+
+graphall = function(rslt){
+  
+  myImagePlot(rslt$timePath,title=c("Temporally Enduring Paths"))
+  myImagePlot(rslt$edgeImp,title=c("Important Edges (Flow/#paths)"))
+  myImagePlot(rslt$speciesPath,title=c("Species Specific Paths"))
+}
+
+# ----- Define a function for plotting a matrix ----- #
+myImagePlot <- function(x, ...){
+  min <- min(x)
+  max <- max(x)
+  yLabels <- rownames(x)
+  xLabels <- colnames(x)
+  title <-c()
+  # check for additional function arguments
+  if( length(list(...)) ){
+    Lst <- list(...)
+    if( !is.null(Lst$zlim) ){
+      min <- Lst$zlim[1]
+      max <- Lst$zlim[2]
+    }
+    if( !is.null(Lst$yLabels) ){
+      yLabels <- c(Lst$yLabels)
+    }
+    if( !is.null(Lst$xLabels) ){
+      xLabels <- c(Lst$xLabels)
+    }
+    if( !is.null(Lst$title) ){
+      title <- Lst$title
+    }
+  }
+  # check for null values
+  if( is.null(xLabels) ){
+    xLabels <- c(1:ncol(x))
+  }
+  if( is.null(yLabels) ){
+    yLabels <- c(1:nrow(x))
+  }
+  
+  layout(matrix(data=c(1,2), nrow=1, ncol=2), widths=c(4,1), heights=c(1,1))
+  
+  # Red and green range from 0 to 1 while Blue ranges from 1 to 0
+  ColorRamp <- rgb( seq(0,1,length=256),  # Red
+                    seq(0,1,length=256),  # Green
+                    seq(1,0,length=256))  # Blue
+  ColorLevels <- seq(min, max, length=length(ColorRamp))
+  
+  # Reverse Y axis
+  reverse <- nrow(x) : 1
+  yLabels <- yLabels[reverse]
+  x <- x[reverse,]
+  
+  # Data Map
+  par(mar = c(3,5,2.5,2))
+  image(1:length(xLabels), 1:length(yLabels), t(x), col=ColorRamp, xlab="",
+        ylab="", axes=FALSE, zlim=c(min,max))
+  if( !is.null(title) ){
+    title(main=title)
+  }
+  axis(BELOW<-1, at=1:length(xLabels), labels=xLabels, cex.axis=0.7)
+  axis(LEFT <-2, at=1:length(yLabels), labels=yLabels, las= HORIZONTAL<-1,
+       cex.axis=0.7)
+  
+  # Color Scale
+  par(mar = c(3,2.5,2.5,2))
+  image(1, ColorLevels,
+        matrix(data=ColorLevels, ncol=length(ColorLevels),nrow=1),
+        col=ColorRamp,
+        xlab="",ylab="",
+        xaxt="n")
+  
+  layout(1)
+}
+# ----- END plot function ----- #
+
+# ----- Define a function for plotting a chart of movements ------#
+
+
+plot_movements = function(adj_matrix, vue_data, 
+                          receiver_data, bottomfish_tag_ids = FALSE, 
+                          filename = 'chartfile.png'){
+  if (bottomfish_tag_ids[1] == FALSE){
+    bottomfish_tag_ids = unique(as.numeric(levels(
+      vue_data$tag_id))[vue_data$tag_id])}
+  
+  #### Loading in NOAA Bathymetry basemap
+  if(exists('bathymetry') == FALSE){
+    bathymetry = getNOAA.bathy(lon1 = -158.8, 
+                               lon2 = -157.170, 
+                               lat1 = 22.208, 
+                               lat2 = 20.386,
+                               resolution = 1)
+  }
+  
+  station_map = station_ids_map(vue_data)
+  station_map_ll = merge(x = station_map, y = receiver_data, 
+                         by.x = "Station Name", by.y = "station_name")
+  
+  for (id in bottomfish_tag_ids){
+    indv_data = vue_data[vue_data$tag_id == id, ]
+    png(paste(id, filename))
+   
+    ## Plotting basemap
+    plot.bathy(bathymetry, land = TRUE, image=TRUE, 
+               bpal = gray.colors(10), deepest.isobath = c(-5000), 
+               shallowest.isobath = c(0), step = c(250), drawlabels = TRUE)
+    ## Adding scale legend
+    scaleBathy(bathymetry, deg = .5, cex = .5)
+    #scaleBathy(bathymetry, deg = .48, cex = .5)
+    ## Adding receiver locations
+    points(lat~lon, data = receiver_data, pch = 19, col = 'red', cex = .4)
+
+    ## Plotting fish movements
+    points(lat~lon, data = indv_data, col = 'blue',cex = 0.6, pch = 19)
+    for(i in 1:nrow(adj_matrix)){
+      for(j in 1:ncol(adj_matrix)){
+        lat = c(lat, station_map_ll$lat[station_map_ll$"Station Number" == i][1],
+                station_map_ll$lat[station_map_ll$"Station Number" == j][1])
+        lon = c(lon, station_map_ll$lon[station_map_ll$"Station Number" == i][1],
+                station_map_ll$lon[station_map_ll$"Station Number" == j][1])
+        lines(lat~lon, col = 'blue', lty = 1, lwd = 1*(adj_matrix[i,j]/max(adj_matrix)))
+      }
+    }
+    dev.off()
+  }
+  return(bathymetry)
+}
+# ----- END plot function ----- #
+
+
+
+
+#### Analysis from other paper ----------------------------
+#### Make graphs for each shark over appropriate time interval
+  #### Yearly?
 
 #### Plot graphs
 
@@ -211,5 +653,3 @@ get_graph = function(vue_df,
   #### Classify by frequency of use (high use, low use). With such
   #### poor data, likely to be mostly low use. 
 
-
-      
