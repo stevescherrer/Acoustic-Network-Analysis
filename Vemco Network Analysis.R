@@ -197,10 +197,10 @@ get_graph = function(vue_df,
     # Columns indicate movement to a receiver
   adj_matrix = matrix(0, numStations,numStations)
   # If station changes, increase adjacency matrix value by one
-  for (i in 2:length(vue_df$station)){
+  for (i in 2:length(vue_df$station_number)){
     if(vue_df$tag_id[i] == vue_df$tag_id[i-1]){
-      prevLoc = as.numeric(vue_df$station[i-1])
-      newLoc = as.numeric(vue_df$station[i])
+      prevLoc = as.numeric(vue_df[i-1])
+      newLoc = as.numeric(vue_df$station_number[i])
       if(binary) {
         adj_matrix[prevLoc, newLoc] = 1
       }
@@ -286,6 +286,7 @@ analysis1 = function() {
   result = matrix(,numStations,numStations);
   # for each fish
   ids = unique(vue_data$tag_id)
+  vue_data = station_ids(vue_data)
   first = TRUE
   for (id in ids) {
     tag_vue = clean_vue(vue_data, id, exclude = FALSE)
